@@ -1,2 +1,2 @@
 # M5COREINK_CLOCK
-My first repository
+M5 core ink で今日の天気と降水確率が表示できる時計を作成しました。
