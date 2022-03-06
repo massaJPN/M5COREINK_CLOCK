@@ -6,4 +6,5 @@ https://github.com/hpsaturn/m5coreink-ntp-clock
 中ボタン＆リセットでntp接続と天気情報をとりに行きます。  
 上手く情報が取れない時は何度か中ボタン＆リセットをお願いします。  
 内蔵電池で一週間ぐらいはもつと思います。
+玄関ドアに貼り付けて使っています。
 ![F8B8F045-C4D3-42B6-8989-2EA80F833191](https://user-images.githubusercontent.com/44919621/156921937-738fa1dd-9730-4ec8-9d89-178f32de1f45.jpeg)
