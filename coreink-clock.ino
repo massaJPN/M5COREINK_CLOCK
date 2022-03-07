@@ -141,7 +141,8 @@ void flushTimePage()
 
             if( RTCtime.Hours == 5  && RTCtime.Minutes == 0 )  //5時天気予報を取得
             {   
-			    M5.M5Ink.clear();
+		M5.M5Ink.clear();
+                TimePageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
                 delay(100);
                 getweather();
                 drawpop();
