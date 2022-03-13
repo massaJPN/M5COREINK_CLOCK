@@ -27,10 +27,10 @@ Preferences preferences;
 const char* NTP_SERVER = "ntp.nict.jp";
 const char* TZ_INFO    = "JST-9";
 
-//const char* WIFI_SSID = "**********";  // ルーターのSSIDを記入
-//const char* WIFI_PASS = "**********";  // ルーターのPASSWORDを記入
-//const String key = "******.json";  // 地域コードを記入
-//const String endpoint = "https://www.jma.go.jp/bosai/forecast/data/forecast/";
+const char* WIFI_SSID = "**********";  // ルーターのSSIDを記入
+const char* WIFI_PASS = "**********";  // ルーターのPASSWORDを記入
+const String key = "******.json";  // 地域コードを記入 東京都の場合、130000.json
+const String endpoint = "https://www.jma.go.jp/bosai/forecast/data/forecast/";
 
 static const char *wd[7] = {"Sun","Mon","Tue","Wed","Thr","Fri","Sat"};
 
@@ -41,6 +41,7 @@ unsigned long lastEntryTime;
 
 String a[] = {"" , "" , "" , ""};
 String stelop = "";
+String fdate = "";
 
 void drawImageToSprite(int posX,int posY,image_t* imagePtr,Ink_Sprite* sprite)
 {
@@ -141,11 +142,11 @@ void flushTimePage()
 
             if( RTCtime.Hours == 5  && RTCtime.Minutes == 0 )  //5時天気予報を取得
             {   
-		M5.M5Ink.clear();
-                TimePageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
-                delay(100);
+//		M5.M5Ink.clear();
+//                TimePageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
+//                delay(100);
                 getweather();
-                drawpop();
+//                drawpop();
             }
 
             drawTime(&RTCtime);
@@ -340,6 +341,7 @@ void getweather() {
         const char* pop = weatherdata["timeSeries"][1]["areas"][0]["pops"][i].as<char*>();
         String strtimedef = timedef;
         String ftime = strtimedef.substring(11,13);
+	fdate = strtimedef.substring(5,13);
 		
         a[k] = String(pop);
         k -= 1 ;
@@ -392,7 +394,7 @@ void drawpop(){
        char t0[256];
        stelop.toCharArray(t0, 256);
        printEfont(&TimePageSprite, t0 ,0,100,2); 
-       char a0[5], a1[5], a2[5] , a3[5];
+       char a0[5], a1[5], a2[5] , a3[5], a4[10];
        a[0].toCharArray(a0, 5);
        printEfont(&TimePageSprite, a0 ,4,168,2);
        a[1].toCharArray(a1, 5);
@@ -401,6 +403,9 @@ void drawpop(){
        printEfont(&TimePageSprite, a2 ,104,168,2);
        a[3].toCharArray(a3, 5);
        printEfont(&TimePageSprite, a3 ,152,168,2);
+       fdate.toCharArray(a4, 10);
+       printEfont(&TimePageSprite, a4 ,95,138,1);
+       printEfont(&TimePageSprite, "更新" ,160,138,1);
        printEfont(&TimePageSprite, "[0~]  [6~]  [12~]  [18~]" ,0,154,1);
        printEfont(&TimePageSprite, "降水確率(%)" ,0,138,1);     
        TimePageSprite.pushSprite(); //この行必要　書き込みが必要
