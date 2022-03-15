@@ -15,9 +15,10 @@
 #include "efont.h"                // この前にfont範囲を書く
 #include "efontM5StackCoreInk.h"  // 
 
-#define WIFI_RETRY_CONNECTION 10
+#define WIFI_RETRY_CONNECTION 5
 
 Ink_Sprite TimePageSprite(&M5.M5Ink);
+Ink_Sprite PopPageSprite(&M5.M5Ink); 
 RTC_TimeTypeDef RTCtime,RTCTimeSave;
 RTC_DateTypeDef RTCDate;
 uint8_t second = 0 ,minutes = 0;
@@ -141,18 +142,15 @@ void flushTimePage()
             M5.rtc.GetDate(&RTCDate);
 
             if( RTCtime.Hours == 5  && RTCtime.Minutes == 0 )  //5時天気予報を取得
-            {   
-//		M5.M5Ink.clear();
-//                TimePageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
-//                delay(100);
-                getweather();
-//                drawpop();
+            {
+                PopPageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
+				getweather();
+                drawpop();
+				PopPageSprite.pushSprite();
             }
 
             drawTime(&RTCtime);
             darwDate(&RTCDate);
-            
-            drawpop();
             TimePageSprite.pushSprite();
             minutes = RTCtime.Minutes;
             // saveBool("clock_suspend",true);
@@ -320,95 +318,87 @@ void getweather() {
     int httpCode = http.GET();
     delay(100);
     if (httpCode > 0) {
-        String payload = http.getString();
-        Serial.println(httpCode);
-        Serial.println(payload);
+      String payload = http.getString();
+      Serial.println(httpCode);
+      Serial.println(payload);
 
-        DynamicJsonBuffer jsonBuffer;
-        int len=payload.length();
-        payload = payload.substring(1,len-1);
-        String json = payload;
-        JsonObject& weatherdata = jsonBuffer.parseObject(json);
-        Serial.println(payload);
+      DynamicJsonBuffer jsonBuffer;
+      int len=payload.length();
+      payload = payload.substring(1,len-1);
+      String json = payload;
+      JsonObject& weatherdata = jsonBuffer.parseObject(json);
+      Serial.println(payload);
 
-        if(!weatherdata.success()){
-          Serial.println("parseObject() failed");
-        }
-
-        int k = 3 ;
-        for (int i = weatherdata["timeSeries"][1]["areas"][0]["pops"].size() - 5; i>=0 ; i--){
-        const char* timedef = weatherdata["timeSeries"][1]["timeDefines"][i].as<char*>();
-        const char* pop = weatherdata["timeSeries"][1]["areas"][0]["pops"][i].as<char*>();
-        String strtimedef = timedef;
-        String ftime = strtimedef.substring(11,13);
-	fdate = strtimedef.substring(5,13);
-		
-        a[k] = String(pop);
-        k -= 1 ;
-
-        Serial.print("timedef:");
-        Serial.println(ftime);
-        Serial.print("pop getweather:");
-        Serial.print(a[0]);Serial.print(":");
-        Serial.print(a[1]);Serial.print(":");
-        Serial.print(a[2]);Serial.print(":");
-        Serial.println(a[3]);
-        }
-
-    const char* weathercodes = weatherdata["timeSeries"][0]["areas"][0]["weatherCodes"][0].as<char*>(); 
-    Serial.print("weathercodes:");
-    Serial.println(weathercodes);
+      if(!weatherdata.success()){
+        Serial.println("parseObject() failed");
+      }
+      WiFi.disconnect();
+		  const char* datedef = weatherdata["reportDatetime"].as<char*>();
+      int k = 3 ;
+      for (int i = weatherdata["timeSeries"][1]["areas"][0]["pops"].size() - 5; i>=0 ; i--){
+          const char* timedef = weatherdata["timeSeries"][1]["timeDefines"][i].as<char*>();
+          const char* pop = weatherdata["timeSeries"][1]["areas"][0]["pops"][i].as<char*>();
+          String strtimedef = timedef;
+          String ftime = strtimedef.substring(11,13);
+          String strdatedef = datedef;
+          fdate = strdatedef.substring(5,13);
     
-    DynamicJsonBuffer wtelopbuffer;
-    char wtelops[] = "{\"100\":\"晴\",\"101\":\"晴時々曇\",\"102\":\"晴一時雨\",\"103\":\"晴時々雨\",\"104\":\"晴一時雪\",\"105\":\"晴時々雪\",\"106\":\"晴一時雨か雪\",\"107\":\"晴時々雨か雪\",\"108\":\"晴一時雨か雷雨\",\"110\":\"晴後時々曇\",\"111\":\"晴後曇\",\"112\":\"晴後一時雨\",\"113\":\"晴後時々雨\",\"114\":\"晴後雨\",\"115\":\"晴後一時雪\",\"116\":\"晴後時々雪\",\"117\":\"晴後雪\",\"118\":\"晴後雨か雪\",\"119\":\"晴後雨か雷雨\",\"120\":\"晴朝夕一時雨\",\"121\":\"晴朝の内一時雨\",\"122\":\"晴夕方一時雨\",\"123\":\"晴山沿い雷雨\",\"124\":\"晴山沿い雪\",\"125\":\"晴午後は雷雨\",\"126\":\"晴昼頃から雨\",\"127\":\"晴夕方から雨\",\"128\":\"晴夜は雨\",\"130\":\"朝の内霧後晴\",\"131\":\"晴明け方霧\",\"132\":\"晴朝夕曇\",\"140\":\"晴時々雨で雷を伴う\",\"160\":\"晴一時雪か雨\",\"170\":\"晴時々雪か雨\",\"181\":\"晴後雪か雨\",\"200\":\"曇\",\"201\":\"曇時々晴\",\"202\":\"曇一時雨\",\"203\":\"曇時々雨\",\"204\":\"曇一時雪\",\"205\":\"曇時々雪\",\"206\":\"曇一時雨か雪\",\"207\":\"曇時々雨か雪\",\"208\":\"曇一時雨か雷雨\",\"209\":\"霧\",\"210\":\"曇後時々晴\",\"211\":\"曇後晴\",\"212\":\"曇後一時雨\",\"213\":\"曇後時々雨\",\"214\":\"曇後雨\",\"215\":\"曇後一時雪\",\"216\":\"曇後時々雪\",\"217\":\"曇後雪\",\"218\":\"曇後雨か雪\",\"219\":\"曇後雨か雷雨\",\"220\":\"曇朝夕一時雨\",\"221\":\"曇朝の内一時雨\",\"222\":\"曇夕方一時雨\",\"223\":\"曇日中時々晴\",\"224\":\"曇昼頃から雨\",\"225\":\"曇夕方から雨\",\"226\":\"曇夜は雨\",\"228\":\"曇昼頃から雪\",\"229\":\"曇夕方から雪\",\"230\":\"曇夜は雪\",\"231\":\"曇海上海岸は霧か霧雨\",\"240\":\"曇時々雨で雷を伴う\",\"250\":\"曇時々雪で雷を伴う\",\"260\":\"曇一時雪か雨\",\"270\":\"曇時々雪か雨\",\"281\":\"曇後雪か雨\",\"300\":\"雨\",\"301\":\"雨時々晴\",\"302\":\"雨時々止む\",\"303\":\"雨時々雪\",\"304\":\"雨か雪\",\"306\":\"大雨\",\"308\":\"雨で暴風を伴う\",\"309\":\"雨一時雪\",\"311\":\"雨後晴\",\"313\":\"雨後曇\",\"314\":\"雨後時々雪\",\"315\":\"雨後雪\",\"316\":\"雨か雪後晴\",\"317\":\"雨か雪後曇\",\"320\":\"朝の内雨後晴\",\"321\":\"朝の内雨後曇\",\"322\":\"雨朝晩一時雪\",\"323\":\"雨昼頃から晴\",\"324\":\"雨夕方から晴\",\"325\":\"雨夜は晴\",\"326\":\"雨夕方から雪\",\"327\":\"雨夜は雪\",\"328\":\"雨一時強く降る\",\"329\":\"雨一時みぞれ\",\"340\":\"雪か雨\",\"350\":\"雨で雷を伴う\",\"361\":\"雪か雨後晴\",\"371\":\"雪か雨後曇\",\"400\":\"雪\",\"401\":\"雪時々晴\",\"402\":\"雪時々止む\",\"403\":\"雪時々雨\",\"405\":\"大雪\",\"406\":\"風雪強い\",\"407\":\"暴風雪\",\"409\":\"雪一時雨\",\"411\":\"雪後晴\",\"413\":\"雪後曇\",\"414\":\"雪後雨\",\"420\":\"朝の内雪後晴\",\"421\":\"朝の内雪後曇\",\"422\":\"雪昼頃から雨\",\"423\":\"雪夕方から雨\",\"425\":\"雪一時強く降る\",\"426\":\"雪後みぞれ\",\"427\":\"雪一時みぞれ\",\"450\":\"雪で雷を伴う\"}";   
-    JsonObject& wwtelops = wtelopbuffer.parseObject(wtelops);
-    delay(10);
-    if (!wwtelops.success()) {
-      Serial.println("parseObject() failed2");
-      return;
-    }
+      a[k] = String(pop);
+      k -= 1 ;
+      }
 
-    Serial.print("wtelops:");
+      const char* weathercodes = weatherdata["timeSeries"][0]["areas"][0]["weatherCodes"][0].as<char*>(); 
+      Serial.print("weathercodes:");
+      Serial.println(weathercodes);
     
-    const char* telop = wwtelops[weathercodes].as<char*>();
-    stelop = String(telop);
-    Serial.print("wtelop:");
-    Serial.println(telop);
-    char t0[256];
-    stelop.toCharArray(t0, 256);
-    Serial.print("t0:");
-    Serial.println(t0);
+      DynamicJsonBuffer wtelopbuffer;
+      char wtelops[] = "{\"100\":\"晴\",\"101\":\"晴時々曇\",\"102\":\"晴一時雨\",\"103\":\"晴時々雨\",\"104\":\"晴一時雪\",\"105\":\"晴時々雪\",\"106\":\"晴一時雨か雪\",\"107\":\"晴時々雨か雪\",\"108\":\"晴一時雨か雷雨\",\"110\":\"晴後時々曇\",\"111\":\"晴後曇\",\"112\":\"晴後一時雨\",\"113\":\"晴後時々雨\",\"114\":\"晴後雨\",\"115\":\"晴後一時雪\",\"116\":\"晴後時々雪\",\"117\":\"晴後雪\",\"118\":\"晴後雨か雪\",\"119\":\"晴後雨か雷雨\",\"120\":\"晴朝夕一時雨\",\"121\":\"晴朝の内一時雨\",\"122\":\"晴夕方一時雨\",\"123\":\"晴山沿い雷雨\",\"124\":\"晴山沿い雪\",\"125\":\"晴午後は雷雨\",\"126\":\"晴昼頃から雨\",\"127\":\"晴夕方から雨\",\"128\":\"晴夜は雨\",\"130\":\"朝の内霧後晴\",\"131\":\"晴明け方霧\",\"132\":\"晴朝夕曇\",\"140\":\"晴時々雨で雷を伴う\",\"160\":\"晴一時雪か雨\",\"170\":\"晴時々雪か雨\",\"181\":\"晴後雪か雨\",\"200\":\"曇\",\"201\":\"曇時々晴\",\"202\":\"曇一時雨\",\"203\":\"曇時々雨\",\"204\":\"曇一時雪\",\"205\":\"曇時々雪\",\"206\":\"曇一時雨か雪\",\"207\":\"曇時々雨か雪\",\"208\":\"曇一時雨か雷雨\",\"209\":\"霧\",\"210\":\"曇後時々晴\",\"211\":\"曇後晴\",\"212\":\"曇後一時雨\",\"213\":\"曇後時々雨\",\"214\":\"曇後雨\",\"215\":\"曇後一時雪\",\"216\":\"曇後時々雪\",\"217\":\"曇後雪\",\"218\":\"曇後雨か雪\",\"219\":\"曇後雨か雷雨\",\"220\":\"曇朝夕一時雨\",\"221\":\"曇朝の内一時雨\",\"222\":\"曇夕方一時雨\",\"223\":\"曇日中時々晴\",\"224\":\"曇昼頃から雨\",\"225\":\"曇夕方から雨\",\"226\":\"曇夜は雨\",\"228\":\"曇昼頃から雪\",\"229\":\"曇夕方から雪\",\"230\":\"曇夜は雪\",\"231\":\"曇海上海岸は霧か霧雨\",\"240\":\"曇時々雨で雷を伴う\",\"250\":\"曇時々雪で雷を伴う\",\"260\":\"曇一時雪か雨\",\"270\":\"曇時々雪か雨\",\"281\":\"曇後雪か雨\",\"300\":\"雨\",\"301\":\"雨時々晴\",\"302\":\"雨時々止む\",\"303\":\"雨時々雪\",\"304\":\"雨か雪\",\"306\":\"大雨\",\"308\":\"雨で暴風を伴う\",\"309\":\"雨一時雪\",\"311\":\"雨後晴\",\"313\":\"雨後曇\",\"314\":\"雨後時々雪\",\"315\":\"雨後雪\",\"316\":\"雨か雪後晴\",\"317\":\"雨か雪後曇\",\"320\":\"朝の内雨後晴\",\"321\":\"朝の内雨後曇\",\"322\":\"雨朝晩一時雪\",\"323\":\"雨昼頃から晴\",\"324\":\"雨夕方から晴\",\"325\":\"雨夜は晴\",\"326\":\"雨夕方から雪\",\"327\":\"雨夜は雪\",\"328\":\"雨一時強く降る\",\"329\":\"雨一時みぞれ\",\"340\":\"雪か雨\",\"350\":\"雨で雷を伴う\",\"361\":\"雪か雨後晴\",\"371\":\"雪か雨後曇\",\"400\":\"雪\",\"401\":\"雪時々晴\",\"402\":\"雪時々止む\",\"403\":\"雪時々雨\",\"405\":\"大雪\",\"406\":\"風雪強い\",\"407\":\"暴風雪\",\"409\":\"雪一時雨\",\"411\":\"雪後晴\",\"413\":\"雪後曇\",\"414\":\"雪後雨\",\"420\":\"朝の内雪後晴\",\"421\":\"朝の内雪後曇\",\"422\":\"雪昼頃から雨\",\"423\":\"雪夕方から雨\",\"425\":\"雪一時強く降る\",\"426\":\"雪後みぞれ\",\"427\":\"雪一時みぞれ\",\"450\":\"雪で雷を伴う\"}";   
+      JsonObject& wwtelops = wtelopbuffer.parseObject(wtelops);
+      delay(10);
+      if (!wwtelops.success()) {
+        Serial.println("parseObject() failed2");
+        return;
+      }
+
+      Serial.print("wtelops:");
+      const char* telop = wwtelops[weathercodes].as<char*>();
+      stelop = String(telop);
+      Serial.print("wtelop:");
+      Serial.println(telop);
+      char t0[256];
+      stelop.toCharArray(t0, 256);
+      Serial.print("t0:");
+      Serial.println(t0);
+
     }
  
     else {
-      Serial.println("Error on HTTP request");
-      }
+        Serial.println("Error on HTTP request");
+    }
  
     http.end(); //リソースを解放
   }
  return;
-WiFi.disconnect();
 }
 
 void drawpop(){
-       char t0[256];
-       stelop.toCharArray(t0, 256);
-       printEfont(&TimePageSprite, t0 ,0,100,2); 
-       char a0[5], a1[5], a2[5] , a3[5], a4[10];
-       a[0].toCharArray(a0, 5);
-       printEfont(&TimePageSprite, a0 ,4,168,2);
-       a[1].toCharArray(a1, 5);
-       printEfont(&TimePageSprite, a1 ,52,168,2);
-       a[2].toCharArray(a2, 5);       
-       printEfont(&TimePageSprite, a2 ,104,168,2);
-       a[3].toCharArray(a3, 5);
-       printEfont(&TimePageSprite, a3 ,152,168,2);
-       fdate.toCharArray(a4, 10);
-       printEfont(&TimePageSprite, a4 ,95,138,1);
-       printEfont(&TimePageSprite, "更新" ,160,138,1);
-       printEfont(&TimePageSprite, "[0~]  [6~]  [12~]  [18~]" ,0,154,1);
-       printEfont(&TimePageSprite, "降水確率(%)" ,0,138,1);     
-       TimePageSprite.pushSprite(); //この行必要　書き込みが必要
+   char t0[256];
+   stelop.toCharArray(t0, 256);
+   printEfont(&TimePageSprite, t0 ,0,100,2); 
+   char a0[5], a1[5], a2[5] , a3[5], a4[10];
+   a[0].toCharArray(a0, 5);
+   printEfont(&TimePageSprite, a0 ,4,168,2);
+   a[1].toCharArray(a1, 5);
+   printEfont(&TimePageSprite, a1 ,52,168,2);
+   a[2].toCharArray(a2, 5);       
+   printEfont(&TimePageSprite, a2 ,104,168,2);
+   a[3].toCharArray(a3, 5);
+   printEfont(&TimePageSprite, a3 ,152,168,2);
+   fdate.toCharArray(a4, 10);
+   printEfont(&TimePageSprite, a4 ,95,138,1);
+   printEfont(&TimePageSprite, "更新" ,160,138,1);
+   printEfont(&TimePageSprite, "[0~]  [6~]  [12~]  [18~]" ,0,154,1);
+   printEfont(&TimePageSprite, "降水確率(%)" ,0,138,1);
 }
 
 void setup()
@@ -435,7 +425,7 @@ void setup()
     Serial.print("RTCtime.Hours = ");
     Serial.println(RTCtime.Hours);
         
-    
+    int flag = 0 ;   
     if( M5.BtnMID.isPressed())
     {
         M5.Speaker.tone(2700,200);
@@ -446,22 +436,26 @@ void setup()
         delay(100);
         wifiInit();
         ntpInit();
+		    PopPageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
         getweather();
-        drawpop();
-        //TimePageSprite.pushSprite();
+        flag = 1 ;
     }
     
     //checkRTC();
     checkBatteryVoltage(false); //false
     TimePageSprite.creatSprite(0,0,200,200);
+	  PopPageSprite.creatSprite(0,0,200,200);
 
-    drawpop();
-    drawTimePage(); 
+    if (flag == 1){
+        PopPageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF ); //これはいる
+        drawpop();  //
+    }
+    drawTimePage(); //
 }
 
 void loop()
 {
-   Serial.println ("start");
+    Serial.println ("start");
     flushTimePage();
 
     if( M5.BtnPWR.wasPressed())
