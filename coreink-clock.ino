@@ -144,9 +144,9 @@ void flushTimePage()
             if( RTCtime.Hours == 5  && RTCtime.Minutes == 0 )  //5時天気予報を取得
             {
                 PopPageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
-				getweather();
+		getweather();
                 drawpop();
-				PopPageSprite.pushSprite();
+		PopPageSprite.pushSprite();
             }
 
             drawTime(&RTCtime);
@@ -360,7 +360,7 @@ void getweather() {
         return;
       }
 
-      Serial.print("wtelops:");
+//    Serial.print("wtelops:");
       const char* telop = wwtelops[weathercodes].as<char*>();
       stelop = String(telop);
       Serial.print("wtelop:");
@@ -436,7 +436,7 @@ void setup()
         delay(100);
         wifiInit();
         ntpInit();
-		    PopPageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
+	PopPageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
         getweather();
         flag = 1 ;
     }
@@ -444,10 +444,10 @@ void setup()
     //checkRTC();
     checkBatteryVoltage(false); //false
     TimePageSprite.creatSprite(0,0,200,200);
-	  PopPageSprite.creatSprite(0,0,200,200);
+    PopPageSprite.creatSprite(0,0,200,200);
 
     if (flag == 1){
-        PopPageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF ); //これはいる
+        PopPageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
         drawpop();  //
     }
     drawTimePage(); //
