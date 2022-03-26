@@ -147,7 +147,22 @@ void flushTimePage()
 		getweather();
                 drawpop();
             }
-
+/* 11時と17時の天気予報も取得する場合はこの行を削除する            
+            else if ( RTCtime.Hours == 11 && RTCtime.Minutes == 0 )  //11時天気予報を取得
+            {   
+                M5.M5Ink.clear();
+                TimePageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
+                getweather();
+                drawpop();
+            }
+            else ( RTCtime.Hours == 17 && RTCtime.Minutes == 0 )  //17時天気予報を取得
+            {   
+                M5.M5Ink.clear();
+                TimePageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
+                getweather();
+              drawpop();
+            }
+11時と17時の天気予報も取得する場合はこの行を削除する  */
             drawTime(&RTCtime);
             darwDate(&RTCDate);
             TimePageSprite.pushSprite();
