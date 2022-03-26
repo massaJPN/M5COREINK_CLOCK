@@ -155,7 +155,7 @@ void flushTimePage()
                 getweather();
                 drawpop();
             }
-            else ( RTCtime.Hours == 17 && RTCtime.Minutes == 0 )  //17時天気予報を取得
+            else if ( RTCtime.Hours == 17 && RTCtime.Minutes == 0 )  //17時天気予報を取得
             {   
                 M5.M5Ink.clear();
                 TimePageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
