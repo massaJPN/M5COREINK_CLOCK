@@ -7,4 +7,4 @@ https://github.com/hpsaturn/m5coreink-ntp-clock
 もし、上手く情報が取れない時は何度か中ボタン＆リセットをお願いします。
 一日3回の天気予報取得では内蔵電池のみで一週間は動作します。
 玄関ドアに貼り付けて使っています。
-![F8B8F045-C4D3-42B6-8989-2EA80F833191](https://user-images.githubusercontent.com/44919621/156921937-738fa1dd-9730-4ec8-9d89-178f32de1f45.jpeg)
+![coreink2](https://user-images.githubusercontent.com/44919621/163718692-7c1f5cc4-a2f7-4d6a-a02a-13954144a66d.jpg)
