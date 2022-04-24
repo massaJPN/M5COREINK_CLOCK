@@ -285,7 +285,6 @@ bool getNTPtime(int sec) {
 void ntpInit() {
     if (WiFi.isConnected()) {
         configTime(0, 0, NTP_SERVER);
-        // See https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv for Timezone codes for your region
         setenv("TZ", TZ_INFO, 1);
         if (getNTPtime(10)) {  // wait up to 10sec to sync
         } else {
