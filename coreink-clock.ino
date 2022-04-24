@@ -153,13 +153,11 @@ void flushTimePage()
             for ( int i = 0; i <size ; i++){
               if( RTCtime.Hours == gwt[i] && RTCtime.Minutes == 0 )  //天気情報取得
               {
-                PopPageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
-                PopPageSprite.FillRect(0, 0, 200, 100, 0); 
-                PopPageSprite.pushSprite();
-                PopPageSprite.FillRect(0, 0, 200, 100, 1);
-                PopPageSprite.pushSprite();
-                wifiInit();
+		wifiInit();
                 getweather();
+                PopPageSprite.clear( CLEAR_DRAWBUFF | CLEAR_LASTBUFF );
+                PopPageSprite.pushSprite();
+		M5.M5Ink.clear();
                 setCpuFrequencyMhz(10);
                 drawpop();
               }
@@ -398,7 +396,7 @@ void drawpop(){
        printEfont(&PopPageSprite, "更新" ,160,38,1);
        printEfont(&PopPageSprite, "[0~]  [6~]  [12~]  [18~]" ,0,54,1);
        printEfont(&PopPageSprite, "降水確率(%)" ,0,38,1);
-	   PopPageSprite.pushSprite();  
+       PopPageSprite.pushSprite();  
 }
 void setup()
 {
